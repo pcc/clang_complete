@@ -109,7 +109,7 @@ function! s:ClangCompleteInit()
   inoremap <expr> <buffer> : <SID>CompleteColon()
   inoremap <expr> <buffer> <CR> <SID>HandlePossibleSelectionEnter()
 
-  nnoremap <expr> <buffer> <C-]> <SID>GotoDeclaration()
+  nnoremap <buffer> <silent> <C-]> :call <SID>GotoDeclaration()<CR>
 
   if g:clang_snippets == 1
     call g:ClangSetSnippetEngine(g:clang_snippets_engine)

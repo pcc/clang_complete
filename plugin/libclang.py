@@ -486,19 +486,22 @@ def gotoDeclaration():
   timer = CodeCompleteTimer(debug, vim.current.buffer.name, -1, -1, params)
 
   with workingDir(params['cwd']):
-    libclangLock.acquire()
-    tu = getCurrentTranslationUnit(params['args'], getCurrentFile(),
-                                   vim.current.buffer.name, timer, update = True)
-    f = File.from_name(tu, vim.current.buffer.name)
-    line, col = vim.current.window.cursor
-    loc = SourceLocation.from_position(tu, f, line, col + 1)
-    cursor = Cursor.from_location(tu, loc)
-    cursor = cursor.get_definition()
-    if cursor is not None:
-      print cursor.location
-    libclangLock.release()
+    with libclangLock:
+      tu = getCurrentTranslationUnit(params['args'], getCurrentFile(),
+                                     vim.current.buffer.name, timer,
+                                     update = True)
+      f = File.from_name(tu, vim.current.buffer.name)
+      line, col = vim.current.window.cursor
+      loc = SourceLocation.from_position(tu, f, line, col + 1)
+      cursor = Cursor.from_location(tu, loc)
+      print cursor.kind
+      if cursor.referenced is not None:
+        loc = cursor.referenced.location
+        if loc.file.name != vim.current.buffer.name:
+          vim.command("edit! %s" % loc.file.name)
+        vim.current.window.cursor = (loc.line, loc.column - 1)
 
-  #timer.finish()
+  timer.finish()
 
 kinds = dict({                                                                 \
 # Declarations                                                                 \
